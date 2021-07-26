@@ -1,0 +1,11 @@
+nvidia-pyindex==1.0.9
+tritonclient==2.11.0
+grpcio==1.38.1
+grpcio-tools==1.38.1
+librosa==0.8.1
+SoundFile==0.10.3.post1
+tqdm==4.61.2
+Flask==2.0.1
+Flask-Cors==3.0.10
+waitress==2.0.0
+flask-socketio==5.1.0
