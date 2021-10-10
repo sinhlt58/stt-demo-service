@@ -18,8 +18,8 @@ viettel_stt_client = ViettelSTTClient()
 @socketio.on("stt")
 def handle_stt(audio_chunk_bytes):
     global viettel_stt_client
+    print("requesting viettel stt ...")
     stt_text = viettel_stt_client.decode(audio_chunk_bytes)
-    print("handle_stt")
     emit("stt", stt_text)
 
 

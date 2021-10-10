@@ -17,7 +17,6 @@ class ViettelSTTClient(object):
             #"num_of_channels": 1,
             #"asr_model": "model code"
         }
-        s = requests.Session()
         files = {
             "file": audio_bytes
         }
