@@ -75,9 +75,10 @@ class STTClient(object):
         file_name = "./stt/example_data/tmp.wav"
         with open(file_name, "wb") as f:
             f.write(base64.b64decode(base64_audio))
-            text = start_asr(file_name, self.stub)
+            # text = start_asr(file_name, self.stub)
 
-        return text
+        # return text
+        return "fake_text"
 
 
 def test_case():

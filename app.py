@@ -25,7 +25,7 @@ def create_app():
     app.config.from_object("config.%s" % str(env).capitalize())
 
     # setup global objects
-    # app.config["stt_service"] = STTClient()
+    app.config["stt_service"] = STTClient()
 
     # socketio
     # app.config["socketio"] = SocketIO(app)

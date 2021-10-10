@@ -5,17 +5,22 @@ from flask_cors import CORS
 from werkzeug.exceptions import HTTPException
 from flask_socketio import SocketIO, emit
 import random
+import datetime
+import base64
+
+from stt.viettel_client import ViettelSTTClient
 
 app = Flask(__name__, static_folder="front-end-react/build")
 cors = CORS(app, resources={"*": {"origins": "*"}})
 socketio = SocketIO(app, cors_allowed_origins="*")
 
-
+viettel_stt_client = ViettelSTTClient()
 @socketio.on("stt")
 def handle_stt(audio_chunk_bytes):
-    # print(type(audio_chunk_bytes))
-
-    emit("stt", "stt text " + str(random.randint(0, 10000000)))
+    global viettel_stt_client
+    stt_text = viettel_stt_client.decode(audio_chunk_bytes)
+    print("handle_stt")
+    emit("stt", stt_text)
 
 
 @app.errorhandler(404)
@@ -57,4 +62,4 @@ def health():
 
 
 if __name__ == '__main__':
-    socketio.run(app)
+    socketio.run(app, port=5000)
