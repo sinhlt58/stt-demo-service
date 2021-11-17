@@ -1,4 +1,4 @@
-
+import random
 
 class UserSessionData(object):
 
@@ -11,6 +11,15 @@ class UserSessionData(object):
 
         self.joined_room = None
         self.username = "default_" + user_id
+
+    def do_stt_for_long_chat(self, audio_chunk: bytes):
+        # call VAD STT models here
+        return random.random()
+
+    def do_stt_for_take_note(self, audio_chunk: bytes):
+        # call VAD STT models here
+        n = random.random()
+        return n, n >= 0.9
 
     def on_clean(self):
         # clean data

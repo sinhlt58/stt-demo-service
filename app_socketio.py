@@ -6,21 +6,38 @@ from werkzeug.exceptions import HTTPException
 from flask_socketio import SocketIO, emit, send, join_room, leave_room
 from models.user_session_data import UserSesssionDataManager
 
-from stt.viettel_client import ViettelSTTClient
-
 app = Flask(__name__, static_folder="front-end-react/build")
 cors = CORS(app, resources={"*": {"origins": "*"}})
 socketio = SocketIO(app, cors_allowed_origins="*")
 
 ss_data_manager = UserSesssionDataManager()
 
-viettel_stt_client = ViettelSTTClient()
-@socketio.on("stt")
-def handle_stt(audio_chunk_bytes):
-    global viettel_stt_client
-    print("requesting viettel stt ...")
-    stt_text = viettel_stt_client.decode(audio_chunk_bytes)
-    emit("stt", stt_text)
+def send_room_message(username, message, room):
+    data = {
+        "username": username,
+        "message": message,
+    }
+    emit("stt_room", data, to=room)
+
+
+@socketio.on("api_stt_long_chat")
+def handle_api_stt_long_chat(audio_chunk):
+    user_id = request.sid
+    ss_data = ss_data_manager.get(user_id)
+    stt_text = ss_data.do_stt_for_long_chat(audio_chunk)
+    send_room_message(ss_data.username, stt_text, ss_data.joined_room)
+
+
+@socketio.on("api_stt_take_note")
+def handle_api_stt_take_note(audio_chunk):
+    user_id = request.sid
+    ss_data = ss_data_manager.get(user_id)
+    stt_text, is_stop = ss_data.do_stt_for_take_note(audio_chunk)
+    res_data = {
+        "stt_text": stt_text,
+        "is_stop": is_stop,
+    }
+    emit("api_stt_take_note", res_data)
 
 
 @socketio.on("join")
@@ -32,8 +49,9 @@ def on_join(data):
     ss_data = ss_data_manager.get(user_id)
     if ss_data is not None:
         ss_data.join_room(room, username)
-
-    send(username + " has entered the room.", to=room)
+    
+    print(username + " has entered the room.")
+    send_room_message("system", username + " has entered the room.", room)
 
 @socketio.on("leave")
 def on_leave(data):
@@ -42,23 +60,25 @@ def on_leave(data):
     room = data["room"]
     leave_room(room)
     ss_data = ss_data_manager.get(user_id)
+
     if ss_data is not None:
         ss_data.leave_room()
 
-    send(username + " has left the room.", to=room)
+    print(username + " has left the room.")
+    send_room_message("system", username + " has left the room.", room)
 
 
 @socketio.on("connect")
 def handle_connect():
     user_id = request.sid # Just use the session as id for convenience
     ss_data_manager.create(user_id)
-
+    print (user_id + " connected")
 
 @socketio.on("disconnect")
 def handle_disconnect():
     user_id = request.sid
     ss_data_manager.clean(user_id)
-
+    print (user_id + " disconnected")
 
 @app.errorhandler(404)
 def not_found(error):
